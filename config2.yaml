@@ -1,0 +1,21 @@
+kind: Pod
+apiVersion: v1
+metadata:
+  name: consumer-app
+  labels:
+    app: consumer
+spec:
+  containers:
+  - name: consumer-apps
+    image: docker.io/ewagner2802/flighttrackerconsumer:latest
+    env:
+    - name: PORT
+      value: "5000"
+    - name: SOCKETIO_PORT
+      value: "4000"
+    - name: POSTGRES_USERNAME
+      value: "nightwatch"
+    - name: POSTGRES_PASSWORD
+      value: "FlightTrackerTesting123"
+    - name: POSTGRES_URL
+      value: "jdbc:postgresql://capstone.cl9klgeakwg5.us-east-2.rds.amazonaws.com:5432/flight_tracker"

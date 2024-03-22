@@ -1,0 +1,146 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: consumer-app
+  labels:
+    app: consumer-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: consumer-app
+  template:
+    metadata:
+      labels:
+        app: consumer-app
+    spec:
+      hostname: consumer-app
+      containers:
+      - name: consumer-app
+        image: ewagner2802/flighttrackerconsumer:latest
+        env:
+        - name: PORT
+          value: "5000"
+        - name: SOCKETIO_PORT
+          value: "4000"
+        - name: KAFKA_HOST
+          value: "kafka-service.kafka.svc.cluster.local:9092"
+        - name: MODE
+          value: "prod"
+        - name: POSTGRES_USERNAME
+          value: "nightwatch"
+        - name: POSTGRES_PASSWORD
+          value: "FlightTrackerTesting123"
+        - name: POSTGRES_URL
+          value: "jdbc:postgresql://capstone.cl9klgeakwg5.us-east-2.rds.amazonaws.com:5432/flight_tracker"
+        ports:
+            - containerPort: 5000
+              name: consumer
+            - containerPort: 4000
+              name: websocket
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: consumer-service
+  labels:
+    app: consumer-app
+spec:
+  selector:
+    app: consumer-app
+  ports:
+  - name: main
+    port: 5000
+  - name: socket
+    port: 4000
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: producer-app
+  labels:
+    app: producer-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: producer-app
+  template:
+    metadata:
+      labels:
+        app: producer-app
+    spec:
+      hostname: producer-app
+      containers:
+      - name: producer-app
+        image: ewagner2802/flighttrackerproducer:latest
+        env:
+        - name: PORT
+          value: "6000"
+        - name: KAFKA_HOST
+          value: "kafka-service.kafka.svc.cluster.local:9092"
+        - name: MODE
+          value: "prod"
+        - name: AVIATION_KEY
+          value: "28fa300471daad608f828401ae813421"
+        - name: AVIATION_BASE_URL
+          value: "http://api.aviationstack.com/v1/"
+        - name: AERO_KEY
+          value: "nf8W0HTvMr8pvVq1QakKpRtNCn7Xqv0s"
+        - name: AERO_BASE_URL
+          value: "https://aeroapi.flightaware.com/aeroapi"
+        ports:
+          - containerPort: 6000 
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: producer-service
+  labels:
+    app: producer-app
+spec:
+  selector:
+    app: producer-app
+  ports:
+  - name: main
+    port: 6000
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: frontend-app
+  labels:
+    app: frontend-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend-app
+  template:
+    metadata:
+      labels:
+        app: frontend-app
+    spec:
+      hostname: frontend-app
+      containers:
+      - name: frontend-app
+        image: ewagner2802/flighttrackerfrontend:latest
+        ports:
+            - containerPort: 80
+
+              name: consumer
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: frontend-service
+  labels:
+    app: frontend-app
+spec:
+  selector:
+    app: frontend-app
+  ports:
+  - name: main
+    port: 8080
+    targetPort: 80
+---

@@ -1,15 +1,27 @@
 version: "2.1"
 
 services:
-  consumer-local:
-    image: consumer 
+  frontend-local:
+    image: ewagner2802/flighttrackerfrontend:latest
+    container_name: frontend
     ports:
-      - "8000:4000"
+      - "80:80"
+
+    networks:
+      - kafka-net
+  consumer-local:
+    image: ewagner2802/flighttrackerconsumer:latest
+    container_name: consumer
+    ports:
+      - "5000:5000"
+      - "4000:4000"
 
     environment:
-      PORT: 4000
+      PORT: 5000
+      SOCKETIO_PORT: 4000
 
       KAFKA_HOST: kafka:9092
+      MODE: prod
 
       POSTGRES_USERNAME: "${POSTGRES_USERNAME}"
       POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
@@ -20,12 +32,13 @@ services:
       - kafka-net
 
   producer-local:
-    image: producer 
+    image: ewagner2802/flighttrackerproducer:latest
+    container_name: producer
     ports:
-      - "9000:9000"
+      - "6000:6000"
 
     environment:
-      PORT: 9000
+      PORT: 6000
 
       KAFKA_HOST: kafka:9092
 
